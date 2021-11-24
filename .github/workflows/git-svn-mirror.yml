@@ -9,40 +9,11 @@ jobs:
   Mirror:
     runs-on: ubuntu-20.04
     steps:
-      - name: Remove latest git (git-svn is not compatible)
-        run: sudo apt-get remove -y git git-man
-      - name: Install git-svn
-        run: sudo apt-get install -y git-svn ruby
-      - name: Install svn2git 
-        run: sudo gem install svn2git && git config --global gc.auto 0
       - name: Check out this repository code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Config git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "4815162342+github-actions[bot]@users.noreply.github.com"
-      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
-      - name: Check if action already init
-        run: (test -f .svn2git/svn-config && echo '::set-output name=SVN_INIT::true') || echo '::set-output name=SVN_INIT::false'
-        id: test-init
-      - name: Init repo if action not initialized
-        if: "${{ steps.test-init.outputs.SVN_INIT }}"
-        run: svn2git https://svn.code.sf.net/p/xflr5/code > /dev/null
-      - name: Load configuration if initialized
-        if: "${{ !steps.test-init.outputs.SVN_INIT }}"
-        run: cat .svn2git/svn-config | while read line; do git config $line; done
-      - name: Converting SVN to GIT
-        run: svn2git --rebase
-      - name: Optimizing
-        run: git gc --auto
-      - name: Save SVN config if first run
-        if: "${{ !steps.test-init.outputs.SVN_INIT }}"
-        run: |
-          mkdir -p .svn2git
-          git config --get-regexp svn-remote.svn > .svn2git/svn-config
-          git add .svn2git/
-          git commit -m "Save svn config to .svn2git/svn-config"
-      - name: Push new changes
-        run: git push
+      - name: Sync SVN
+        uses: Taknok/Action-mirror-SVN-to-GIT@dev
+        with:
+          svn-url: https://svn.code.sf.net/p/xflr5/code
