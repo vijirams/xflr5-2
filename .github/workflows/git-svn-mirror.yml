@@ -17,3 +17,4 @@ jobs:
         uses: Taknok/Action-mirror-SVN-to-GIT@dev
         with:
           svn-url: https://svn.code.sf.net/p/xflr5/code
+          verbose: true
